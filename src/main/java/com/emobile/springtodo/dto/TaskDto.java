@@ -15,6 +15,7 @@ public class TaskDto {
     @Schema(description = "Заголовок задачи", example = "Купить молоко")
     private String title;
 
+    @NotBlank(message = "Описание не может быть пустым")
     @Size(max = 1000, message = "Описание не должно превышать 1000 символов")
     @Schema(description = "Описание задачи", example = "Купить 2 литра молока")
     private String description;
