@@ -16,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @SpringBootTest
-public class TaskServiceTest {
+class TaskServiceTest {
 
     @Autowired
     private TaskService taskService;
@@ -27,21 +27,21 @@ public class TaskServiceTest {
     private Task testTask;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         testTask = new Task(1L, "Тестовая задача", "Описание", false, LocalDateTime.now());
     }
 
     @Test
-    public void testFindAll() {
+    void testFindAll() {
         when(taskRepository.findAll(10, 0)).thenReturn(List.of(testTask));
         List<Task> tasks = taskService.findAll(10, 0);
         assertEquals(1, tasks.size());
-        assertEquals("Тестовая задача", tasks.get(0).getTitle());
+        assertEquals("Тестовая задача", tasks.getFirst().getTitle());
         verify(taskRepository, times(1)).findAll(10, 0);
     }
 
     @Test
-    public void testFindById() {
+    void testFindById() {
         when(taskRepository.findById(1L)).thenReturn(Optional.of(testTask));
         Optional<Task> foundTask = taskService.findById(1L);
         assertTrue(foundTask.isPresent());
@@ -50,7 +50,7 @@ public class TaskServiceTest {
     }
 
     @Test
-    public void testSave() {
+    void testSave() {
         when(taskRepository.save(any(Task.class))).thenReturn(testTask);
         Task savedTask = taskService.save(new Task(null, "Новая задача", "Описание", false, null));
         assertNotNull(savedTask.getId());
@@ -59,14 +59,14 @@ public class TaskServiceTest {
     }
 
     @Test
-    public void testUpdate() {
+    void testUpdate() {
         Task updatedTask = new Task(1L, "Обновлённая задача", "Новое описание", true, testTask.getCreatedAt());
         taskService.update(updatedTask);
         verify(taskRepository, times(1)).update(updatedTask);
     }
 
     @Test
-    public void testDelete() {
+    void testDelete() {
         taskService.delete(1L);
         verify(taskRepository, times(1)).delete(1L);
     }
