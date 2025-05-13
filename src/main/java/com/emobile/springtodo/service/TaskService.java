@@ -6,6 +6,7 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -28,17 +29,20 @@ public class TaskService {
         return taskRepository.findById(id);
     }
 
+    @Transactional
     @CachePut(value = "tasks", key = "#result.id")
     public Task save(Task task) {
         return taskRepository.save(task);
     }
 
+    @Transactional
     @CachePut(value = "tasks", key = "#task.id")
     public Task update(Task task) {
         taskRepository.update(task);
         return task;
     }
 
+    @Transactional
     @CacheEvict(value = "tasks", key = "#id")
     public void delete(Long id) {
         taskRepository.delete(id);
