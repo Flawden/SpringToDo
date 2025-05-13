@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.PageRequest;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -33,11 +34,13 @@ class TaskServiceTest {
 
     @Test
     void testFindAll() {
-        when(taskRepository.findAll(10, 0)).thenReturn(List.of(testTask));
-        List<Task> tasks = taskService.findAll(10, 0);
+        int limit = 10;
+        int offset = 0;
+        when(taskRepository.findAllByOrderByCreatedAtDesc(PageRequest.of(offset, limit))).thenReturn(List.of(testTask));
+        List<Task> tasks = taskService.findAll(limit, offset);
         assertEquals(1, tasks.size());
         assertEquals("Тестовая задача", tasks.getFirst().getTitle());
-        verify(taskRepository, times(1)).findAll(10, 0);
+        verify(taskRepository, times(1)).findAllByOrderByCreatedAtDesc(PageRequest.of(offset, limit));
     }
 
     @Test
@@ -62,13 +65,13 @@ class TaskServiceTest {
     void testUpdate() {
         Task updatedTask = new Task(1L, "Обновлённая задача", "Новое описание", true, testTask.getCreatedAt());
         taskService.update(updatedTask);
-        verify(taskRepository, times(1)).update(updatedTask);
+        verify(taskRepository, times(1)).save(updatedTask);
     }
 
     @Test
     void testDelete() {
         taskService.delete(1L);
-        verify(taskRepository, times(1)).delete(1L);
+        verify(taskRepository, times(1)).deleteById(1L);
     }
 
 }
