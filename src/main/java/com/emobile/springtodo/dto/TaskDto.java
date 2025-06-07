@@ -3,11 +3,11 @@ package com.emobile.springtodo.dto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
-@Getter
-@Setter
+@Data
 @Schema(description = "DTO для создания и обновления задачи")
 public class TaskDto {
     @NotBlank(message = "Заголовок не может быть пустым")
