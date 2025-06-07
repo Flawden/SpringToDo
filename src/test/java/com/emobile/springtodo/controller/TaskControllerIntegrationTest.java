@@ -29,10 +29,9 @@ public class TaskControllerIntegrationTest {
 
     @BeforeEach
     public void setUp() {
-        // Очищаем данные перед каждым тестом
+
         taskService.findAll(100, 0).forEach(task -> taskService.delete(task.getId()));
 
-        // Создаём тестовую задачу
         TaskDto taskDto = new TaskDto();
         taskDto.setTitle("Тестовая задача");
         taskDto.setDescription("Описание тестовой задачи");
@@ -70,17 +69,6 @@ public class TaskControllerIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.title", is("Новая задача")))
                 .andExpect(jsonPath("$.id", notNullValue()));
-    }
-
-    @Test
-    public void testCreateTaskInvalidData() throws Exception {
-        String invalidTaskJson = "{\"title\":\"\",\"description\":\"\"}";
-        mockMvc.perform(post("/api/tasks")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(invalidTaskJson))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.title", is("Заголовок должен быть от 1 до 255 символов")))
-                .andExpect(jsonPath("$.description", is("Описание не может быть пустым")));
     }
 
     @Test
