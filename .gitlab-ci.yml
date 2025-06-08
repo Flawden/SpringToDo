@@ -1,0 +1,63 @@
+stages:
+  - build
+  - test
+  - deploy
+
+variables:
+  MAVEN_OPTS: "-Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository"
+  SONAR_TOKEN: $CI_SONAR_TOKEN
+
+cache:
+  paths:
+    - .m2/repository
+
+build:
+  stage: build
+  image: maven:3.9.6-eclipse-temurin-17
+  script:
+    - mvn clean package -DskipTests -s .mvn/settings.xml
+  artifacts:
+    paths:
+      - target/*.jar
+    expire_in: 1 week
+  only:
+    - dev
+    - main
+
+test:
+  stage: test
+  image: maven:3.9.6-eclipse-temurin-17
+
+  services:
+    - name: postgres:14
+      alias: postgres
+    - name: redis:7
+      alias: redis
+
+  variables:
+    # PostgreSQL
+    POSTGRES_DB: spring_todo
+    POSTGRES_USER: postgres
+    POSTGRES_PASSWORD: postgres
+
+    SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/spring_todo
+    SPRING_DATASOURCE_USERNAME: postgres
+    SPRING_DATASOURCE_PASSWORD: postgres
+
+    # Redis
+    SPRING_DATA_REDIS_HOST: redis
+    SPRING_DATA_REDIS_PORT: 6379
+
+  script:
+    - mvn test -s .mvn/settings.xml
+  only:
+    - dev
+    - master
+
+deploy:
+  stage: deploy
+  image: maven:3.9.6-eclipse-temurin-17
+  script:
+    - mvn deploy -DskipTests -s .mvn/settings.xml
+  only:
+    - master
