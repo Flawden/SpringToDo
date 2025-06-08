@@ -5,7 +5,9 @@ import com.emobile.springtodo.repository.TaskRepository;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -20,7 +22,7 @@ public class TaskService {
 
     @Cacheable(value = "tasks", key = "#limit + ':' + #offset")
     public List<Task> findAll(int limit, int offset) {
-        return taskRepository.findAll(limit, offset);
+        return taskRepository.findAllByOrderByCreatedAtDesc(PageRequest.of(offset, limit));
     }
 
     @Cacheable(value = "tasks", key = "#id")
@@ -28,19 +30,22 @@ public class TaskService {
         return taskRepository.findById(id);
     }
 
+    @Transactional
     @CachePut(value = "tasks", key = "#result.id")
     public Task save(Task task) {
         return taskRepository.save(task);
     }
 
+    @Transactional
     @CachePut(value = "tasks", key = "#task.id")
     public Task update(Task task) {
-        taskRepository.update(task);
+        taskRepository.save(task);
         return task;
     }
 
+    @Transactional
     @CacheEvict(value = "tasks", key = "#id")
     public void delete(Long id) {
-        taskRepository.delete(id);
+        taskRepository.deleteById(id);
     }
 }
