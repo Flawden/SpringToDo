@@ -14,13 +14,25 @@ pipeline {
 
         stage('Сборка проекта') {
             steps {
-                sh 'mvn clean install -DskipTests'
+                script {
+                    if (isUnix()) {
+                        sh 'mvn clean install -DskipTests'
+                    } else {
+                        bat 'mvn clean install -DskipTests'
+                    }
+                }
             }
         }
 
         stage('Прогон тестов') {
             steps {
-                sh 'mvn test'
+                script {
+                    if (isUnix()) {
+                        sh 'mvn test'
+                    } else {
+                        bat 'mvn test'
+                    }
+                }
             }
         }
 
@@ -29,7 +41,13 @@ pipeline {
                 branch 'main'
             }
             steps {
-                sh 'docker build -t $DOCKER_IMAGE:$BUILD_NUMBER .'
+                script {
+                    if (isUnix()) {
+                        sh 'docker build -t $DOCKER_IMAGE:$BUILD_NUMBER .'
+                    } else {
+                        bat "docker build -t %DOCKER_IMAGE%:%BUILD_NUMBER% ."
+                    }
+                }
             }
         }
 
@@ -39,12 +57,23 @@ pipeline {
             }
             steps {
                 withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                    sh '''
-                        echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
-                        docker push $DOCKER_IMAGE:$BUILD_NUMBER
-                        docker tag $DOCKER_IMAGE:$BUILD_NUMBER $DOCKER_IMAGE:latest
-                        docker push $DOCKER_IMAGE:latest
-                    '''
+                    script {
+                        if (isUnix()) {
+                            sh '''
+                                echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
+                                docker push $DOCKER_IMAGE:$BUILD_NUMBER
+                                docker tag $DOCKER_IMAGE:$BUILD_NUMBER $DOCKER_IMAGE:latest
+                                docker push $DOCKER_IMAGE:latest
+                            '''
+                        } else {
+                            bat """
+                                echo %DOCKER_PASS% | docker login -u %DOCKER_USER% --password-stdin
+                                docker push %DOCKER_IMAGE%:%BUILD_NUMBER%
+                                docker tag %DOCKER_IMAGE%:%BUILD_NUMBER% %DOCKER_IMAGE%:latest
+                                docker push %DOCKER_IMAGE%:latest
+                            """
+                        }
+                    }
                 }
             }
         }
